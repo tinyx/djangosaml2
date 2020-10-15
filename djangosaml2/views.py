@@ -147,18 +147,17 @@ def login(request,
 
     # Do we have a Discovery Service?
     discovery_service = getattr(settings, 'SAML2_DISCO_URL', False)
-    if discovery_service:
-    if not selected_idp and discovery_service:
-            # We have to build the URL to redirect to with all the information
-            # for the Discovery Service to know how to send the flow back to us
-            login_url = request.build_absolute_uri(reverse('saml2_login'))
-            login_url = '{0}?next={1}'.format(login_url,
-                                              urlquote(came_from, safe=''))
-            ds_url = '{0}?entityID={1}&return={2}&returnIDParam=idp'
-            ds_url = ds_url.format(discovery_service,
-                                   urlquote(getattr(conf,'entityid'), safe=''),
-                                   urlquote(login_url, safe=''))
-            return HttpResponseRedirect(ds_url)
+    if discovery_service and not selected_idp:
+        # We have to build the URL to redirect to with all the information
+        # for the Discovery Service to know how to send the flow back to us
+        login_url = request.build_absolute_uri(reverse('saml2_login'))
+        login_url = '{0}?next={1}'.format(login_url,
+                                          urlquote(came_from, safe=''))
+        ds_url = '{0}?entityID={1}&return={2}&returnIDParam=idp'
+        ds_url = ds_url.format(discovery_service,
+                               urlquote(getattr(conf,'entityid'), safe=''),
+                               urlquote(login_url, safe=''))
+        return HttpResponseRedirect(ds_url)
 
     # is a embedded wayf needed?
     idps = available_idps(conf)
